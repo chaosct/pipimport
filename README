@@ -13,11 +13,9 @@ Pipimport will call pip (form your virtualenv) and install it before importing.
 Will install module unipath
 Downloading/unpacking unipath
   Downloading Unipath-1.0.tar.gz
-  Running setup.py egg_info for package unipath
-    
+  Running setup.py egg_info for package unipath  
 Installing collected packages: unipath
   Running setup.py install for unipath
-    
 Successfully installed unipath
 Cleaning up...
 >>> unipath
