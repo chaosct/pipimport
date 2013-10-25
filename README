@@ -1,0 +1,25 @@
+Pipimport automatically installs missing modules using pip at import time.
+It is best used with virtualenv.
+
+Just import pipimport and call install():
+
+>>> import pipimport
+>>> pipimport.install()
+
+Now you can normally import modules that are not currently installed.
+Pipimport will call pip (form your virtualenv) and install it before importing.
+
+>>> import unipath
+Will install module unipath path=None
+Downloading/unpacking unipath
+  Downloading Unipath-1.0.tar.gz
+  Running setup.py egg_info for package unipath
+    
+Installing collected packages: unipath
+  Running setup.py install for unipath
+    
+Successfully installed unipath
+Cleaning up...
+load unipath
+>>> unipath
+<module 'unipath' from '/home/carles/Projectes/piphook/ve/local/lib/python2.7/site-packages/unipath/__init__.pyc'>
