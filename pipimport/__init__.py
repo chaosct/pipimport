@@ -1,4 +1,4 @@
-# enc: utf-8
+# encoding: utf-8
 # Author: Carles F. Julià <carles AT fjulia.name>
 
 import sys
