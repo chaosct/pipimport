@@ -35,7 +35,10 @@ class ImportReplacement(object):
 		except ImportError:
 			pass
 		print "Will install module {}".format(name)
-		pip_install(name)
+		try:
+			pip_install(name)
+		except PipInstallError:
+			raise ImportError
 		rescan_path()
 		return self.realimport(name, *args, **kwargs)
 		
