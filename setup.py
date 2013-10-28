@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name = "pipimport",
-    version = "0.2.1",
+    version = "0.2.2",
     author = "Carles F. Julia",
     author_email = "carles@fjulia.name",
     description = "Automatically install missing modules using pip at import time. Best used with virtualenv.",

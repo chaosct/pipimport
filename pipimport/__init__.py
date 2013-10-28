@@ -46,5 +46,7 @@ class ImportReplacement(object):
 
 def install():
 	import __builtin__
+	if isinstance(__builtin__.__import__, ImportReplacement):
+		return
 	importreplacement = ImportReplacement()
 	__builtin__.__import__ = importreplacement
