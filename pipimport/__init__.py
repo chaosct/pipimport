@@ -21,80 +21,84 @@ import subprocess
 import site
 import atexit
 
-_pip_bin = os.path.join(sys.prefix,'bin','pip')
-_ignore_list_f = [os.path.join(s,".pipimport-ignore")
-					for s in [sys.prefix,'.']]
+_pip_bin = os.path.join(sys.prefix, 'bin', 'pip')
+_ignore_list_f = [os.path.join(s, ".pipimport-ignore")
+                  for s in [sys.prefix, '.']]
+
 
 def _openone(flist, *args):
-	for p in flist:
-		try:
-			f = open(p, *args)
-			return (p,f)
-		except IOError:
-			pass
-	return None,None
+    for p in flist:
+        try:
+            f = open(p, *args)
+            return (p, f)
+        except IOError:
+            pass
+    return None, None
+
 
 class PipInstallError(Exception):
-	pass
+    pass
+
 
 def _pip_install(name):
-	try:
-		subprocess.check_call([_pip_bin, "install", name])
-	except subprocess.CalledProcessError:
-		raise PipInstallError
+    try:
+        subprocess.check_call([_pip_bin, "install", name])
+    except subprocess.CalledProcessError:
+        raise PipInstallError
+
 
 def _rescan_path():
-	paths = [s for s in sys.path if s.startswith(sys.prefix)
-		and (s.endswith('site-packages') or s.endswith('site-python'))]
-	site.addsitedir(paths[0])
+    paths = [s for s in sys.path if s.startswith(sys.prefix)
+             and (s.endswith('site-packages') or s.endswith('site-python'))]
+    site.addsitedir(paths[0])
 
 
 class ImportPipInstaller(object):
-	def __init__(self):
-		self.realimport = __import__
-		self.ignoref, f = _openone(_ignore_list_f)
-		if f:
-			self.ignore = set([l.strip() for l in f])
-			f.close()
-		else:
-			self.ignore = set()
 
-	def __call__(self, name, *args, **kwargs):
-		try:
-			return self.realimport(name, *args, **kwargs)
-		except ImportError:
-			pass
-		if name in self.ignore:
-			raise ImportError
-		print "Will install module {}".format(name)
-		try:
-			_pip_install(name)
-		except PipInstallError:
-			self.ignore.add(name)
-			raise ImportError
-		_rescan_path()
-		return self.realimport(name, *args, **kwargs)
+    def __init__(self):
+        self.realimport = __import__
+        self.ignoref, f = _openone(_ignore_list_f)
+        if f:
+            self.ignore = set([l.strip() for l in f])
+            f.close()
+        else:
+            self.ignore = set()
 
-	def saveignore(self):
-		fl = [i for i in [self.ignoref]+_ignore_list_f if i]
-		p, f = _openone(fl, 'w')
-		if f:
-			f.writelines([i+'\n' for i in self.ignore])
-			f.close()
-		
+    def __call__(self, name, *args, **kwargs):
+        try:
+            return self.realimport(name, *args, **kwargs)
+        except ImportError:
+            pass
+        if name in self.ignore:
+            raise ImportError
+        print "Will install module {}".format(name)
+        try:
+            _pip_install(name)
+        except PipInstallError:
+            self.ignore.add(name)
+            raise ImportError
+        _rescan_path()
+        return self.realimport(name, *args, **kwargs)
+
+    def saveignore(self):
+        fl = [i for i in [self.ignoref] + _ignore_list_f if i]
+        p, f = _openone(fl, 'w')
+        if f:
+            f.writelines([i + '\n' for i in self.ignore])
+            f.close()
 
 
 def install():
-	import __builtin__
-	if isinstance(__builtin__.__import__, ImportPipInstaller):
-		return
-	importreplacement = ImportPipInstaller()
-	__builtin__.__import__ = importreplacement
+    import __builtin__
+    if isinstance(__builtin__.__import__, ImportPipInstaller):
+        return
+    importreplacement = ImportPipInstaller()
+    __builtin__.__import__ = importreplacement
 
 
 @atexit.register
 def uninstall():
-	import __builtin__
-	if isinstance(__builtin__.__import__, ImportPipInstaller):
-		__import__.saveignore()
-		__builtin__.__import__ = __import__.realimport
+    import __builtin__
+    if isinstance(__builtin__.__import__, ImportPipInstaller):
+        __import__.saveignore()
+        __builtin__.__import__ = __import__.realimport
