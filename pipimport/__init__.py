@@ -1,6 +1,20 @@
 # encoding: utf-8
 # Author: Carles F. Julià <carles AT fjulia.name>
 
+"""
+Pipimport automatically installs missing modules using pip at import time.
+It is best used with virtualenv.
+
+Just import pipimport and call install():
+
+>>> import pipimport
+>>> pipimport.install()
+
+Now you can import missing modules and they will be downloaded and installed by pip.
+
+Author: Carles F. Julià <carles AT fjulia.name>
+"""
+
 import sys
 import os.path
 import subprocess
@@ -8,12 +22,11 @@ import site
 import json
 import atexit
 
-pip_bin = os.path.join(sys.prefix,'bin','pip')
-python_bin = os.path.join(sys.prefix,'bin','python')
-ignore_list_f = [os.path.join(s,".pipimport-ignore.json")
+_pip_bin = os.path.join(sys.prefix,'bin','pip')
+_ignore_list_f = [os.path.join(s,".pipimport-ignore.json")
 					for s in [sys.prefix,'.']]
 
-def openone(flist, *args):
+def _openone(flist, *args):
 	for p in flist:
 		try:
 			f = open(p, *args)
@@ -25,22 +38,22 @@ def openone(flist, *args):
 class PipInstallError(Exception):
 	pass
 
-def pip_install(name):
+def _pip_install(name):
 	try:
-		subprocess.check_call([pip_bin, "install", name])
+		subprocess.check_call([_pip_bin, "install", name])
 	except subprocess.CalledProcessError:
 		raise PipInstallError
 
-def rescan_path():
+def _rescan_path():
 	paths = [s for s in sys.path if s.startswith(sys.prefix)
 		and (s.endswith('site-packages') or s.endswith('site-python'))]
 	site.addsitedir(paths[0])
 
 
-class ImportReplacement(object):
+class ImportPipInstaller(object):
 	def __init__(self):
 		self.realimport = __import__
-		self.ignoref, f = openone(ignore_list_f)
+		self.ignoref, f = _openone(_ignore_list_f)
 		if f:
 			self.ignore = set(json.load(f))
 			f.close()
@@ -56,16 +69,16 @@ class ImportReplacement(object):
 			raise ImportError
 		print "Will install module {}".format(name)
 		try:
-			pip_install(name)
+			_pip_install(name)
 		except PipInstallError:
 			self.ignore.add(name)
 			raise ImportError
-		rescan_path()
+		_rescan_path()
 		return self.realimport(name, *args, **kwargs)
 
 	def saveignore(self):
-		fl = [i for i in [self.ignoref]+ignore_list_f if i]
-		p, f = openone(fl, 'w')
+		fl = [i for i in [self.ignoref]+_ignore_list_f if i]
+		p, f = _openone(fl, 'w')
 		if f:
 			json.dump(list(self.ignore),f)
 			f.close()
@@ -74,15 +87,15 @@ class ImportReplacement(object):
 
 def install():
 	import __builtin__
-	if isinstance(__builtin__.__import__, ImportReplacement):
+	if isinstance(__builtin__.__import__, ImportPipInstaller):
 		return
-	importreplacement = ImportReplacement()
+	importreplacement = ImportPipInstaller()
 	__builtin__.__import__ = importreplacement
 
 
 @atexit.register
 def uninstall():
 	import __builtin__
-	if isinstance(__builtin__.__import__, ImportReplacement):
+	if isinstance(__builtin__.__import__, ImportPipInstaller):
 		__import__.saveignore()
 		__builtin__.__import__ = __import__.realimport
