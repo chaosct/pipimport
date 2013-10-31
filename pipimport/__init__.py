@@ -19,11 +19,10 @@ import sys
 import os.path
 import subprocess
 import site
-import json
 import atexit
 
 _pip_bin = os.path.join(sys.prefix,'bin','pip')
-_ignore_list_f = [os.path.join(s,".pipimport-ignore.json")
+_ignore_list_f = [os.path.join(s,".pipimport-ignore")
 					for s in [sys.prefix,'.']]
 
 def _openone(flist, *args):
@@ -55,7 +54,7 @@ class ImportPipInstaller(object):
 		self.realimport = __import__
 		self.ignoref, f = _openone(_ignore_list_f)
 		if f:
-			self.ignore = set(json.load(f))
+			self.ignore = set([l.strip() for l in f])
 			f.close()
 		else:
 			self.ignore = set()
@@ -80,7 +79,7 @@ class ImportPipInstaller(object):
 		fl = [i for i in [self.ignoref]+_ignore_list_f if i]
 		p, f = _openone(fl, 'w')
 		if f:
-			json.dump(list(self.ignore),f)
+			f.writelines([i+'\n' for i in self.ignore])
 			f.close()
 		
 
