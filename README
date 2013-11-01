@@ -24,6 +24,6 @@ Cleaning up...
 The modules that can't be found are remembered so sequential imports don't try to
 download them again. This list is saved in the virtualenv directory ( sys.prefix )
 or in the working directory (the first with writing permissions) with the name
-of .pipimport-ignore.json . The list is loaded in subsequent sessions.
+of .pipimport-ignore . The list is loaded in subsequent sessions.
 
 
