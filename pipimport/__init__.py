@@ -20,6 +20,7 @@ import os.path
 import subprocess
 import site
 import atexit
+import os.path
 
 _pip_bin = os.path.join(sys.prefix, 'bin', 'pip')
 _ignore_list_f = [os.path.join(s, ".pipimport-ignore")
@@ -48,7 +49,9 @@ def _pip_install(name):
 
 
 def _rescan_path():
-    paths = [s for s in sys.path if s.startswith(sys.prefix)
+    absprefix = os.path.abspath(sys.prefix)
+    abspaths = [os.path.abspath(s) for s in sys.path]
+    paths = [s for s in abspaths if s.startswith(absprefix)
              and (s.endswith('site-packages') or s.endswith('site-python'))]
     site.addsitedir(paths[0])
 
