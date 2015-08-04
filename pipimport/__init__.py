@@ -22,6 +22,11 @@ import site
 import atexit
 import os.path
 
+try:
+    import __builtin__
+except ImportError:
+    import builtins as __builtin__
+
 _pip_bin = os.path.join(sys.prefix, 'bin', 'pip')
 _ignore_list_f = [os.path.join(s, ".pipimport-ignore")
                   for s in [sys.prefix, '.']]
@@ -45,7 +50,7 @@ def _pip_install(name):
     try:
         subprocess.check_call([_pip_bin, "install", name])
     except subprocess.CalledProcessError:
-        raise PipInstallError
+        raise PipInstallError()
 
 
 def _rescan_path():
@@ -73,13 +78,13 @@ class ImportPipInstaller(object):
         except ImportError:
             pass
         if name in self.ignore:
-            raise ImportError
-        print "Will install module {}".format(name)
+            raise ImportError()
+        print("Will install module {}".format(name))
         try:
             _pip_install(name)
         except PipInstallError:
             self.ignore.add(name)
-            raise ImportError
+            raise ImportError()
         _rescan_path()
         return self.realimport(name, *args, **kwargs)
 
@@ -92,7 +97,6 @@ class ImportPipInstaller(object):
 
 
 def install():
-    import __builtin__
     if isinstance(__builtin__.__import__, ImportPipInstaller):
         return
     importreplacement = ImportPipInstaller()
@@ -101,7 +105,6 @@ def install():
 
 @atexit.register
 def uninstall():
-    import __builtin__
     if isinstance(__builtin__.__import__, ImportPipInstaller):
         __import__.saveignore()
         __builtin__.__import__ = __import__.realimport
