@@ -7,7 +7,7 @@ Just import pipimport and call install():
 >>> pipimport.install()
 
 Now you can normally import modules that are not currently installed.
-Pipimport will call pip (form your virtualenv) and install it before importing.
+Pipimport will call pip (from your virtualenv) and install it before importing.
 
 >>> import unipath
 Will install module unipath
