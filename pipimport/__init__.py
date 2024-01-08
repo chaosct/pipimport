@@ -97,14 +97,14 @@ class ImportPipInstaller(object):
 
 
 def install():
-    if isinstance(builtins.__import__, ImportPipInstaller):
+    if isinstance(__builtin__import__, ImportPipInstaller):
         return
     importreplacement = ImportPipInstaller()
-    builtins.__import__ = importreplacement
+    __builtin__import__ = importreplacement
 
 
 @atexit.register
 def uninstall():
-    if isinstance(builtins.__import__, ImportPipInstaller):
+    if isinstance(__builtin__import__, ImportPipInstaller):
         __import__.saveignore()
-        builtins.__import__ = __import__.realimport
+        __builtin__import__ = __import__.realimport
